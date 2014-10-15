@@ -1,0 +1,81 @@
+################################################################################
+# Compiler settings
+################################################################################
+CC=gcc
+CXX=g++
+MOC=moc-qt4
+
+
+################################################################################
+# Qt settings
+################################################################################
+QT_CFLAGS = -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED \
+            -I/usr/share/qt4/mkspecs/linux-g++ \
+            -I/usr/include/qt4/QtCore \
+            -I/usr/include/qt4/QtGui \
+            -I/usr/include/qt4
+QT_LIBS   = -lQtGui -lQtCore 
+
+
+################################################################################
+# Eigen3
+################################################################################
+EIGEN3_CFLAGS = -I./libs/eigen3 
+EIGEN3_LIBS   = 
+
+################################################################################
+# RTK++ settings
+################################################################################
+RTK_DIR    = /home/bushuhui/uav/rtk++
+RTK_CFLAGS = -I$(RTK_DIR)/include
+RTK_LIBS   = -L$(RTK_DIR)/lib -lrtk_osa -lrtk_utils
+
+
+################################################################################
+# cppformat settings
+################################################################################
+CPPFORMAT_CFLAGS = -DFMT_USE_FILE_DESCRIPTORS=1 -DGTEST_LANG_CXX11=0 -DNDEBUG \
+                   -Wall -Wextra -pedantic
+
+################################################################################
+# overall CFLAGS & LDFLAGS
+################################################################################
+CXXFLAGS = -D__STDC_CONSTANT_MACROS  $(CPPFORMAT_CFLAGS)
+LDFLAGS  = -lz -lpthread 
+MOC_CFLAGS = $(QT_CFLAGS)
+
+
+CXXFLAGS += -msse4
+#CXXFLAGS += -fopenmp
+#LDFLAGS += -lgomp
+
+#CXXFLAGS += $(FFMPEG_CFLAGS)
+
+CXXFLAGS += -g -rdynamic
+#CXXFLAGS += -O3 
+
+################################################################################
+
+################################################################################
+src-all := $(wildcard *.cpp)
+obj-all := $(patsubst %.cpp,%.o,$(src-all))
+inc-all := $(wildcard *.h)
+
+target_req = posix.o format.o
+
+
+all : $(target_req) test_1.e
+
+
+%.e:%.cpp $(inc-all)
+	$(CXX) $< -o $@ $(CXXFLAGS) $(LDFLAGS) $(target_req)
+
+%.o:%.cpp
+	$(CXX) -c $< -o $@ $(CXXFLAGS)
+
+%.o:%.cc
+	$(CXX) -c $< -o $@ $(CXXFLAGS)
+
+clean :
+	rm -f *.e *.o moc_*
+
